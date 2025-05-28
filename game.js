@@ -244,21 +244,26 @@ document.addEventListener("keydown", (e) => {
 // Gestos táctiles
 let startX, startY;
 document.addEventListener("touchstart", (e) => {
-  e.preventDefault(); // evita el scroll
-  startX = e.touches[0].clientX;
-  startY = e.touches[0].clientY;
+  // Sólo prevenir scroll si el toque es en el gameBoard
+  if (e.target.closest("#gameBoard")) {
+    e.preventDefault();
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }
 }, { passive: false });
 
 document.addEventListener("touchend", (e) => {
-  e.preventDefault(); // evita el scroll
-  const dx = e.changedTouches[0].clientX - startX;
-  const dy = e.changedTouches[0].clientY - startY;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 30) move("right");
-    else if (dx < -30) move("left");
-  } else {
-    if (dy > 30) move("down");
-    else if (dy < -30) move("up");
+  if (e.target.closest("#gameBoard")) {
+    e.preventDefault();
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 30) move("right");
+      else if (dx < -30) move("left");
+    } else {
+      if (dy > 30) move("down");
+      else if (dy < -30) move("up");
+    }
   }
 }, { passive: false });
 
