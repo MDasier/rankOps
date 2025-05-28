@@ -3,7 +3,7 @@
 Una adaptación temática del clásico juego **2048**, donde en lugar de fusionar números, asciendes en **rangos militares** desde *Recluta* hasta *Comandante Estelar*. ¡Combina fichas y alcanza el rango máximo antes de quedarte sin movimientos!
 
 ## 🎮 Demo
-> Puedes probar el juego en [tu-enlace-aquí.com](https://tu-enlace-aquí.com) .
+> Puedes probar el juego en [Rank Ops!](https://mdasier.github.io/rankOps/) .
 
 ---
 
