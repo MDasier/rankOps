@@ -114,9 +114,15 @@ body {
     font-size: 0.9rem;
   }
 
-  button.btn-secondary, button.btn-danger {
-    padding: 8px 16px;
-    font-size: 0.85rem;
+  button.btn-secondary, 
+  button.btn-danger {
+    padding: 12px 20px;      /* Más área de toque */
+    font-size: 1rem;         /* Texto más legible */
+    border-radius: 8px;      /* Mejor visual */
+    margin: 12px auto;       /* Separación y centrado */
+    display: block;          /* Que tome línea completa para facilitar clic */
+    width: 90%;              /* Que ocupe casi todo el ancho del contenedor */
+    max-width: 300px;        /* Limitar ancho máximo */
   }
 
   .toast {
