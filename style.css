@@ -1,0 +1,94 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#gameBoard {
+  display: grid !important;
+  grid-template-columns: repeat(4, 90px) !important;
+  grid-template-rows: repeat(4, 90px) !important;
+  gap: 10px !important;
+  background: #2a2e39;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+  margin: 20px auto;
+  width: fit-content !important;
+  border: 6px solid transparent;
+  transition: border-color 0.3s ease;}
+
+.cell {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  box-shadow: inset 0 0 5px rgba(255,255,255,0.1);
+  background-color: #444;
+  color: white;
+}
+
+.spawn {
+  animation: appear 0.2s ease-in;
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.level-1  { background-color: #2F4F4F; color: #fff; }  /* Dark Slate Gray */
+.level-2  { background-color: #556B2F; color: #fff; }  /* Dark Olive Green */
+.level-3  { background-color: #6B8E23; color: #fff; }  /* Olive Drab */
+.level-4  { background-color: #808000; color: #fff; }  /* Olive */
+.level-5  { background-color: #9ACD32; color: #000; }  /* Yellow Green */
+.level-6  { background-color: #8F9779; color: #000; }  /* Camouflage Green */
+.level-7  { background-color: #708238; color: #fff; }  /* Moss Green */
+.level-8  { background-color: #4B5320; color: #fff; }  /* Army Green */
+.level-9  { background-color: #3B5323; color: #fff; }  /* Military Green */
+.level-10 { background-color: #556B2F; color: #fff; }  /* Dark Olive Green (repeated darker) */
+.level-11 { background-color: #6E7F41; color: #fff; }  /* Laurel Green */
+.level-12 { background-color: #7C9C56; color: #000; }  /* Olive Green Light */
+.level-13 { background-color: #9DBF9E; color: #000; }  /* Sage Green */
+.level-14 { background-color: #A9BA9D; color: #000; }  /* Soft Olive */
+.level-15 { background-color: #C1C6B8; color: #000; }  /* Light Military Green */
+.level-16 { background-color: #D4D6AA; color: #000; }  /* Pale Olive */
+.level-17 { background-color: #F0E68C; color: #000; }  /* Khaki */
+.level-18 { background-color: #EEE8AA; color: #000; }  /* Pale Goldenrod */
+.level-19 { background-color: #BDB76B; color: #000; }  /* Dark Khaki */
+.level-20 { background-color: #556B2F; color: #fff; }  /* Dark Olive Green */
+
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  background-color: #55723e;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-weight: 600;
+  font-size: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
