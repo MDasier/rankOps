@@ -244,10 +244,13 @@ document.addEventListener("keydown", (e) => {
 // Gestos táctiles
 let startX, startY;
 document.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // evita el scroll
   startX = e.touches[0].clientX;
   startY = e.touches[0].clientY;
-});
+}, { passive: false });
+
 document.addEventListener("touchend", (e) => {
+  e.preventDefault(); // evita el scroll
   const dx = e.changedTouches[0].clientX - startX;
   const dy = e.changedTouches[0].clientY - startY;
   if (Math.abs(dx) > Math.abs(dy)) {
@@ -257,6 +260,6 @@ document.addEventListener("touchend", (e) => {
     if (dy > 30) move("down");
     else if (dy < -30) move("up");
   }
-});
+}, { passive: false });
 
 loadGame();
