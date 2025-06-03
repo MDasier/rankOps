@@ -55,6 +55,11 @@ const borderColors = [
 ];
 
 const gameBoard = document.getElementById("gameBoard");
+
+gameBoard.addEventListener('touchmove', function(event) {
+  event.preventDefault();  // evita el scroll cuando tocamos en el tablero
+}, { passive: false });
+
 const scoreDisplay = document.getElementById("score");
 const maxLevelDisplay = document.getElementById("maxLevel");
 const startButton = document.querySelector("button.btn.btn-secondary.btn-lg");
