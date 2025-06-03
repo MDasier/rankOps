@@ -1,3 +1,4 @@
+const BACKEND_URL = "https://rankops-halloffame.onrender.com";
 const boardSize = 4;
 let board = [];
 let score = 0;
@@ -104,7 +105,10 @@ function updateBoard() {
 
   if (isGameOver()) {
     gameOver = true;
-    setTimeout(() => showToast("¡No quedan movimientos!"), 100);
+    setTimeout(() => {
+      showToast("¡No quedan movimientos!");
+      addToHallOfFame();
+    }, 100);
     resetButton.classList.remove("btn-secondary");
     resetButton.classList.add("btn-danger");
   } else {
@@ -231,6 +235,42 @@ function loadGame() {
   const histMaxLevel = parseInt(localStorage.getItem("histMaxLevel")) || 0;
   document.getElementById("maxScore").textContent = histMaxScore;
   document.getElementById("maxRank").textContent = histMaxLevel;
+}
+
+async function showHallOfFame() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/hall-of-fame`);
+    const data = await res.json();
+
+    let table = "<h3 class='text-info'>🏆 Hall of Fame</h3><table class='table table-dark table-striped'><thead><tr><th>Nombre</th><th>Puntos</th><th>Rango</th></tr></thead><tbody>";
+    for (const entry of data) {
+      table += `<tr><td>${entry.name}</td><td>${entry.score}</td><td>${rangos[entry.rank]}</td></tr>`;
+    }
+    table += "</tbody></table>";
+
+    const div = document.createElement("div");
+    div.className = "container";
+    div.innerHTML = table;
+    document.body.appendChild(div);
+  } catch (err) {
+    console.error("Error al cargar el Hall of Fame:", err);
+  }
+}
+
+async function addToHallOfFame() {
+  const name = prompt("¡Felicidades! Ingresa tu nombre para el Hall of Fame:");
+  if (!name) return;
+
+  try {
+    await fetch(`${BACKEND_URL}/hall-of-fame`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, score, rank: maxLevel })
+    });
+    showHallOfFame();
+  } catch (err) {
+    console.error("Error al enviar datos al Hall of Fame:", err);
+  }
 }
 
 
