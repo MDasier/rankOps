@@ -434,3 +434,7 @@ document.addEventListener("keydown", e => {
 });
 
 loadGame();
+
+document.getElementById("showHallOfFame").addEventListener("click", async () => {
+  await showHallOfFameInBoard();
+});
