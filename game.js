@@ -299,6 +299,32 @@ window.addEventListener("load", () => {
   loadGame();
 });
 
+let touchStartX = 0;
+let touchStartY = 0;
+const minSwipeDistance = 30; // mínimo px para reconocer swipe
+
+gameBoard.addEventListener("touchstart", (e) => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+});
+
+gameBoard.addEventListener("touchend", (e) => {
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+
+  if (Math.abs(dx) < minSwipeDistance && Math.abs(dy) < minSwipeDistance) return;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0) move("right");
+    else move("left");
+  } else {
+    if (dy > 0) move("down");
+    else move("up");
+  }
+});
+
 document.addEventListener("keydown", (e) => {
   if (!gameStarted) return;
   switch (e.key) {
