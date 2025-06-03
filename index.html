@@ -20,50 +20,59 @@
 
     <div id="gameBoard" class="d-inline-block mb-4"></div>
 
-    <button class="btn btn-secondary btn-lg">Start</button>
+    <button id="startBtn" class="btn btn-secondary btn-lg">Start</button>
 
     <div class="row justify-content-center my-4">
       <div class="col-auto fs-5">Puntuación máxima: <span id="maxScore">0</span></div>
       <div class="col-auto fs-5">Máximo rango: <span id="maxRank">0</span></div>
     </div>
   </div>
-<!-- Modal Arcade para Hall of Fame -->
-<div class="modal fade" id="hallOfFameModal" tabindex="-1" aria-labelledby="hallOfFameLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-dark text-center arcade-modal">
-      <div class="modal-header">
-        <h5 class="modal-title w-100" id="hallOfFameLabel">🏆 ¡Nuevo récord!</h5>
-      </div>
-      <div class="modal-body">
-        <p>Tu puntuación: <strong id="modalScore">0</strong></p>
-        <p>Tu rango máximo: <strong id="modalRank">Recluta</strong></p>
 
-        <div class="arcade-name-selector d-flex justify-content-center mb-3">
-          <div class="arcade-letter" data-index="0">
-            <button class="arrow up btn btn-link text-dark">&#9650;</button>
-            <div class="letter-display fs-1 fw-bold">A</div>
-            <button class="arrow down btn btn-link text-dark">&#9660;</button>
-          </div>
-          <div class="arcade-letter" data-index="1">
-            <button class="arrow up btn btn-link text-dark">&#9650;</button>
-            <div class="letter-display fs-1 fw-bold">A</div>
-            <button class="arrow down btn btn-link text-dark">&#9660;</button>
-          </div>
-          <div class="arcade-letter" data-index="2">
-            <button class="arrow up btn btn-link text-dark">&#9650;</button>
-            <div class="letter-display fs-1 fw-bold">A</div>
-            <button class="arrow down btn btn-link text-dark">&#9660;</button>
-          </div>
+  <!-- Modal Arcade para Hall of Fame -->
+  <div class="modal fade" id="hallOfFameListModal" tabindex="-1" aria-labelledby="hallOfFameListLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl arcade-modal">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="hallOfFameListLabel">🏅 Hall of Fame</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-
-        <div class="modal-footer justify-content-center">
-          <button type="button" id="submitArcadeName" class="btn btn-primary">Enviar</button>
+        <div class="modal-body" id="hallOfFameListContent">
+          <!-- Tabla de records cargada dinámicamente -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- Modal Arcade para nuevo record -->
+  <div id="hallOfFameModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content arcade-modal p-3">
+          <div class="modal-title"> 🏆 Nuevo récord!</div>
+          <div class="modal-body arcade-name-selection fs-1 mb-3 d-flex justify-content-center gap-3">
+            <div class="arcade-letter-selector text-center" data-index="0">
+              <div class="arrow up" style="cursor:pointer;">▲</div>
+              <div class="arcade-letter" style="cursor:pointer;">A</div>
+              <div class="arrow down" style="cursor:pointer;">▼</div>
+            </div>
+            <div class="arcade-letter-selector text-center" data-index="1">
+              <div class="arrow up" style="cursor:pointer;">▲</div>
+              <div class="arcade-letter" style="cursor:pointer;">A</div>
+              <div class="arrow down" style="cursor:pointer;">▼</div>
+            </div>
+            <div class="arcade-letter-selector text-center" data-index="2">
+              <div class="arrow up" style="cursor:pointer;">▲</div>
+              <div class="arcade-letter" style="cursor:pointer;">A</div>
+              <div class="arrow down" style="cursor:pointer;">▼</div>
+            </div>
+          </div>
+        <button id="submitArcadeName" class="btn btn-primary w-100 fs-5">Guardar</button>
+      </div>
+    </div>
+  </div>
+  
   <div id="toast" class="toast">¡No quedan movimientos!</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
