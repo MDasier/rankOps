@@ -55,6 +55,7 @@ const borderColors = [
 ];
 
 const gameBoard = document.getElementById("gameBoard");
+gameBoard.style.borderRadius = "12px";
 
 gameBoard.addEventListener('touchmove', function(event) {
   event.preventDefault();  // evita el scroll cuando tocamos en el tablero
@@ -171,11 +172,9 @@ function updateBoard(mergedCells = []) {
 
     const color = borderColors[maxLevel] || "transparent";
     if (maxLevel > 0) {
-      gameBoard.style.border = "6px solid";
-      gameBoard.style.borderImage = `linear-gradient(45deg, ${color}, #ffffff) 1`;
+      gameBoard.style.border = "6px solid ${color}";
     } else {
       gameBoard.style.border = "6px solid transparent";
-      gameBoard.style.borderImage = "none";
     }
 
   }
@@ -188,9 +187,11 @@ function updateBoard(mergedCells = []) {
     setTimeout(async () => {
       showToast("¡No quedan movimientos!");
       gameStarted = false;
-      startButton.textContent = "Start";
-      startButton.classList.remove("btn-danger");
-      startButton.classList.add("btn-secondary");
+      startButton.textContent = "Reinciar";
+      startButton.classList.remove("btn-success");
+      startButton.classList.add("btn-danger");
+
+      gameBoard.style.opacity = 0.5;
   
       const histMaxScore = parseInt(localStorage.getItem("histMaxScore")) || 0;
   
@@ -203,6 +204,8 @@ function updateBoard(mergedCells = []) {
     }, 100);
   } else {
     gameOver = false;
+    gameBoard.style.opacity = 1;
+
     startButton.textContent = "Reiniciar";
     startButton.classList.remove("btn-danger");
     startButton.classList.add("btn-secondary");
