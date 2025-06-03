@@ -14,22 +14,20 @@ body {
   margin: 20px auto;
   width: fit-content !important;
   border: 6px solid transparent;
-  transition: border-color 0.3s ease;}
-
+  transition: border-color 0.3s ease;
+}
 .cell {
-  width: 90px;
-  height: 90px;
+  width: 80px;
+  height: 80px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 14px;
   border-radius: 6px;
-  transition: all 0.2s ease-in-out;
-  user-select: none;
-  box-shadow: inset 0 0 5px rgba(255,255,255,0.1);
-  background-color: #444;
+  background-color: #222;
   color: white;
+  user-select: none;
 }
 
 .spawn {
@@ -91,6 +89,70 @@ body {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
   pointer-events: auto;
+}
+
+.arcade-modal {
+  font-family: 'Press Start 2P', monospace;
+  background-color: #2a2e39;
+  border: 4px solid #00f;
+  box-shadow: 0 0 20px #00f, 0 0 10px #00f inset;
+  color: #0ff;
+  text-align: center;
+}
+
+.arcade-modal .modal-header,
+.arcade-modal .modal-footer {
+  border: none;
+  background: #1a1d29;
+}
+
+.arcade-modal .modal-title {
+  font-size: 1.2rem;
+  color: #fff;
+  width: 100%;
+  text-align: center;
+}
+
+.arcade-modal .modal-body {
+  background-color: #2a2e39;
+  color: #0ff;
+}
+
+.arcade-name-selector {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.arcade-name-selector .arcade-letter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 10px;
+  font-size: 1.5rem;
+}
+
+.arcade-name-selector .arrow {
+  font-size: 1.2rem;
+  color: #0ff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.arcade-name-selector .arrow:hover {
+  transform: scale(1.2);
+}
+
+.arcade-name-selector .letter-display {
+  font-size: 2rem;
+  background: #1a1d29;
+  padding: 10px;
+  border-radius: 6px;
+  border: 2px solid #00f;
+  width: 40px;
+  text-align: center;
+  color: #0ff;
 }
 
 
