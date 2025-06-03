@@ -60,6 +60,9 @@ const resetButton = document.querySelector('button.btn-secondary');
 
 function initBoard() {
   board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
+  score = 0;
+  maxLevel = 0;
+  gameOver = false;
   addRandomRank();
   addRandomRank();
   updateBoard();
@@ -127,21 +130,24 @@ function updateBoard() {
 
   if (isGameOver()) {
     gameOver = true;
-    setTimeout(() => {
+    setTimeout(async () => {
       showToast("¡No quedan movimientos!");
       gameStarted = false;
       resetButton.textContent = "Reiniciar";
       resetButton.classList.remove("btn-secondary");
       resetButton.classList.add("btn-danger");
-      showHallOfFameInBoard();
+      await showHallOfFameInBoard();
 
       const histMaxScore = parseInt(localStorage.getItem("histMaxScore")) || 0;
       if (score > histMaxScore) {
-        addToHallOfFame();
+        await addToHallOfFame();
+        // Actualizamos tabla después de guardar
+        await showHallOfFameInBoard();
       }
     }, 100);
   } else {
     gameOver = false;
+    resetButton.textContent = "Reiniciar";
     resetButton.classList.remove("btn-danger");
     resetButton.classList.add("btn-secondary");
   }
@@ -273,7 +279,7 @@ async function addToHallOfFame() {
   if (!playerName) return;
 
   try {
-    await fetch(`${BACKEND_URL}/add`, {
+    await fetch(`${BACKEND_URL}/hall-of-fame`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
