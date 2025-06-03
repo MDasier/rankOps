@@ -22,10 +22,6 @@
 
     <button id="startBtn" class="btn btn-secondary btn-lg">Start</button>
 
-    <div class="row justify-content-center my-4">
-      <div class="col-auto fs-5">Puntuación máxima: <span id="maxScore">0</span></div>
-      <div class="col-auto fs-5">Máximo rango: <span id="maxRank">0</span></div>
-    </div>
   </div>
 
   <!-- Modal Arcade para Hall of Fame -->
@@ -37,6 +33,12 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body" id="hallOfFameListContent">
+          <!-- Spinner overlay -->
+        <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
+          <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
           <!-- Tabla de records cargada dinámicamente -->
         </div>
         <div class="modal-footer">

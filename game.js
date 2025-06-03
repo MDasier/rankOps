@@ -75,6 +75,14 @@ const submitArcadeNameBtn = document.getElementById("submitArcadeName");
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 let selectedName = ["A", "A", "A"];
 
+function showSpinner() {
+  document.getElementById("loadingSpinner").style.display = "flex";
+}
+
+function hideSpinner() {
+  document.getElementById("loadingSpinner").style.display = "none";
+}
+
 function initBoard() {
   board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
   score = 0;
@@ -99,8 +107,12 @@ function addRandomRank() {
 
 async function showHallOfFameInBoard() {
   try {
+    showSpinner();  // Muestra el spinner antes de hacer fetch
+
     const res = await fetch(`${BACKEND_URL}/hall-of-fame`);
     const data = await res.json();
+
+    hideSpinner();  // Oculta el spinner cuando llega la data
 
     let table = `
       <table class="table table-dark table-striped text-center align-middle">
@@ -124,17 +136,18 @@ async function showHallOfFameInBoard() {
 
     table += "</tbody></table>";
 
-    // Inserta tabla en el contenido del modal
     document.getElementById("hallOfFameListContent").innerHTML = table;
 
-    // Muestra el modal (usando Bootstrap Modal)
+    // Mostrar el modal (asegúrate que el modal existe)
     const modal = new bootstrap.Modal(document.getElementById("hallOfFameListModal"));
     modal.show();
+
   } catch (err) {
+    hideSpinner();
     console.error("Error al cargar Hall of Fame:", err);
+    document.getElementById("hallOfFameListContent").innerHTML = `<p class="text-danger">Error al cargar datos.</p>`;
   }
 }
-
 
 function updateBoard(mergedCells = []) {
   if (!gameStarted) return;
