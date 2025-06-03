@@ -4,29 +4,30 @@ let board = [];
 let score = 0;
 let maxLevel = 0;
 let gameOver = false;
+let gameStarted = false; // Estado para saber si la partida está en marcha
 
 const rangos = [
-  "",                   
-  "Recluta",           
-  "Soldado Raso",      
-  "Cabo",              
-  "Cabo Primero",      
-  "Sargento",          
-  "Sargento Primero",  
-  "Subteniente",       
-  "Teniente",          
-  "Teniente Primero",  
-  "Capitán",           
-  "Mayor",             
-  "Teniente Coronel",  
-  "Coronel",           
+  "",
+  "Recluta",
+  "Soldado Raso",
+  "Cabo",
+  "Cabo Primero",
+  "Sargento",
+  "Sargento Primero",
+  "Sub Teniente",
+  "Teniente",
+  "Teniente Primero",
+  "Capitán",
+  "Mayor",
+  "Teniente Coronel",
+  "Coronel",
   "General de Brigada",
   "General de División",
-  "Teniente General",  
-  "General",           
-  "General en Jefe",   
-  "Mariscal",          
-  "Comandante Estelar" 
+  "Teniente General",
+  "General",
+  "General en Jefe",
+  "Mariscal",
+  "Comandante Estelar"
 ];
 const borderColors = [
   "transparent",      // 0 
@@ -51,6 +52,7 @@ const borderColors = [
   "#311b92",          // 19
   "#1a237e"           // 20
 ];
+
 const gameBoard = document.getElementById("gameBoard");
 const scoreDisplay = document.getElementById("score");
 const maxLevelDisplay = document.getElementById("maxLevel");
@@ -75,7 +77,29 @@ function addRandomRank() {
   board[r][c] = 1;
 }
 
+// Muestra el Hall of Fame dentro del gameBoard cuando no hay partida activa
+async function showHallOfFameInBoard() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/hall-of-fame`);
+    const data = await res.json();
+
+    let table = "<h3 class='text-info mb-3'>🏆 Hall of Fame</h3><table class='table table-dark table-striped'><thead><tr><th>Nombre</th><th>Puntos</th><th>Rango</th></tr></thead><tbody>";
+    for (const entry of data) {
+      table += `<tr><td>${entry.name}</td><td>${entry.score}</td><td>${rangos[entry.rank]}</td></tr>`;
+    }
+    table += "</tbody></table>";
+
+    gameBoard.innerHTML = table;
+    gameBoard.style.display = "block";
+    gameBoard.style.border = "none";
+  } catch (err) {
+    console.error("Error al cargar el Hall of Fame:", err);
+  }
+}
+
 function updateBoard() {
+  if (!gameStarted) return; // No actualizamos si el juego no está activo
+
   gameBoard.innerHTML = "";
   for (let r = 0; r < boardSize; r++) {
     for (let c = 0; c < boardSize; c++) {
@@ -87,13 +111,11 @@ function updateBoard() {
       const color = borderColors[maxLevel] || "transparent";
       if (maxLevel > 0) {
         gameBoard.style.border = "6px solid";
-        const color = borderColors[maxLevel] || "transparent";
         gameBoard.style.borderImage = `linear-gradient(45deg, ${color}, #ffffff) 1`;
       } else {
         gameBoard.style.border = "6px solid transparent";
         gameBoard.style.borderImage = "none";
       }
-      
 
       cell.textContent = rangos[level] || "";
       gameBoard.appendChild(cell);
@@ -107,10 +129,17 @@ function updateBoard() {
     gameOver = true;
     setTimeout(() => {
       showToast("¡No quedan movimientos!");
-      addToHallOfFame();
+      gameStarted = false;
+      resetButton.textContent = "Reiniciar";
+      resetButton.classList.remove("btn-secondary");
+      resetButton.classList.add("btn-danger");
+      showHallOfFameInBoard();
+
+      const histMaxScore = parseInt(localStorage.getItem("histMaxScore")) || 0;
+      if (score > histMaxScore) {
+        addToHallOfFame();
+      }
     }, 100);
-    resetButton.classList.remove("btn-secondary");
-    resetButton.classList.add("btn-danger");
   } else {
     gameOver = false;
     resetButton.classList.remove("btn-danger");
@@ -119,7 +148,7 @@ function updateBoard() {
 }
 
 function move(dir) {
-  if (gameOver) return;
+  if (gameOver || !gameStarted) return;
   let moved = false;
   for (let i = 0; i < boardSize; i++) {
     let line = [];
@@ -159,11 +188,9 @@ function move(dir) {
 }
 
 function isGameOver() {
-  // Si hay celdas vacías, no hay fin de juego
   for (let r = 0; r < boardSize; r++) {
     for (let c = 0; c < boardSize; c++) {
       if (board[r][c] === 0) return false;
-      // Comprobamos contiguos para movimientos posibles
       const current = board[r][c];
       if (
         (r > 0 && board[r - 1][c] === current) ||
@@ -188,14 +215,18 @@ function showToast(message, duration = 2500) {
 }
 
 function resetGame() {
-  score = 0;
-  maxLevel = 0;
-  gameOver = false;
-  resetButton.classList.remove("btn-danger");
-  resetButton.classList.add("btn-secondary");
-  initBoard();
+  if (!gameStarted) {
+    // Iniciar partida
+    gameStarted = true;
+    resetButton.textContent = "Reiniciar";
+    initBoard();
+  } else {
+    // Reiniciar partida en curso (confirmar)
+    if (confirm("¿Quieres reiniciar la partida?")) {
+      initBoard();
+    }
+  }
 }
-
 
 function saveGame() {
   localStorage.setItem("tablero", JSON.stringify(board));
@@ -213,22 +244,22 @@ function saveGame() {
     localStorage.setItem("histMaxLevel", maxLevel);
   }
 
-  // Refrescar pantalla
   document.getElementById("maxScore").textContent = Math.max(score, historialMaxScore);
   document.getElementById("maxRank").textContent = Math.max(maxLevel, historialMaxLevel);
 }
 
-
-
 function loadGame() {
   const savedBoard = localStorage.getItem("tablero");
-  if (savedBoard) {
+  if (savedBoard && gameStarted) {
     board = JSON.parse(savedBoard);
     score = parseInt(localStorage.getItem("puntuacion")) || 0;
     maxLevel = parseInt(localStorage.getItem("maxPuntuacion")) || 0;
     updateBoard();
   } else {
-    initBoard();
+    // No hay partida activa, mostrar Hall of Fame
+    showHallOfFameInBoard();
+    resetButton.textContent = "Start";
+    gameStarted = false;
   }
 
   const histMaxScore = parseInt(localStorage.getItem("histMaxScore")) || 0;
@@ -237,74 +268,47 @@ function loadGame() {
   document.getElementById("maxRank").textContent = histMaxLevel;
 }
 
-async function showHallOfFame() {
-  try {
-    const res = await fetch(`${BACKEND_URL}/hall-of-fame`);
-    const data = await res.json();
-
-    let table = "<h3 class='text-info'>🏆 Hall of Fame</h3><table class='table table-dark table-striped'><thead><tr><th>Nombre</th><th>Puntos</th><th>Rango</th></tr></thead><tbody>";
-    for (const entry of data) {
-      table += `<tr><td>${entry.name}</td><td>${entry.score}</td><td>${rangos[entry.rank]}</td></tr>`;
-    }
-    table += "</tbody></table>";
-
-    const div = document.createElement("div");
-    div.className = "container";
-    div.innerHTML = table;
-    document.body.appendChild(div);
-  } catch (err) {
-    console.error("Error al cargar el Hall of Fame:", err);
-  }
-}
-
 async function addToHallOfFame() {
-  const name = prompt("¡Felicidades! Ingresa tu nombre para el Hall of Fame:");
-  if (!name) return;
+  const playerName = prompt("¡Nuevo récord! Ingresa tu nombre:");
+  if (!playerName) return;
 
   try {
-    await fetch(`${BACKEND_URL}/hall-of-fame`, {
+    await fetch(`${BACKEND_URL}/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, score, rank: maxLevel })
+      body: JSON.stringify({
+        name: playerName,
+        score,
+        rank: maxLevel
+      }),
     });
-    showHallOfFame();
+    showToast("¡Registro guardado!");
   } catch (err) {
-    console.error("Error al enviar datos al Hall of Fame:", err);
+    console.error("Error al guardar en Hall of Fame:", err);
+    showToast("Error al guardar el récord.");
   }
 }
 
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowUp") move("up");
-  else if (e.key === "ArrowDown") move("down");
-  else if (e.key === "ArrowLeft") move("left");
-  else if (e.key === "ArrowRight") move("right");
+window.addEventListener("load", () => {
+  loadGame();
 });
 
-// Gestos táctiles
-let startX, startY;
-document.addEventListener("touchstart", (e) => {
-  // Sólo prevenir scroll si el toque es en el gameBoard
-  if (e.target.closest("#gameBoard")) {
-    e.preventDefault();
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
+document.addEventListener("keydown", (e) => {
+  if (!gameStarted) return;
+  switch (e.key) {
+    case "ArrowUp":
+      move("up");
+      break;
+    case "ArrowDown":
+      move("down");
+      break;
+    case "ArrowLeft":
+      move("left");
+      break;
+    case "ArrowRight":
+      move("right");
+      break;
   }
-}, { passive: false });
+});
 
-document.addEventListener("touchend", (e) => {
-  if (e.target.closest("#gameBoard")) {
-    e.preventDefault();
-    const dx = e.changedTouches[0].clientX - startX;
-    const dy = e.changedTouches[0].clientY - startY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 30) move("right");
-      else if (dx < -30) move("left");
-    } else {
-      if (dy > 30) move("down");
-      else if (dy < -30) move("up");
-    }
-  }
-}, { passive: false });
-
-loadGame();
+resetButton.addEventListener("click", resetGame);
