@@ -190,6 +190,7 @@ body {
   z-index: 1050;
 }
 
+
 @keyframes mergePop {
   0% {
     transform: scale(1);

@@ -1,87 +1,73 @@
-const BACKEND_URL = "https://rankops-halloffame.onrender.com";
+import { collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
 const boardSize = 4;
 let board = [];
 let score = 0;
 let maxLevel = 0;
 let gameOver = false;
-let gameStarted = false; // para saber si hay partida activa
+let gameStarted = false; // controla si hay partida activa
 
 const rangos = [
-  "",
-  "Recluta",
-  "Soldado Raso",
-  "Cabo",
-  "Cabo Primero",
-  "Sargento",
-  "Sargento Primero",
-  "Sub Teniente",
-  "Teniente",
-  "Teniente Primero",
-  "Capitán",
-  "Mayor",
-  "Teniente Coronel",
-  "Coronel",
-  "General de Brigada",
-  "General de División",
-  "Teniente General",
-  "General",
-  "General en Jefe",
-  "Mariscal",
-  "Comandante Estelar"
+  "", "Recluta", "Soldado Raso", "Cabo", "Cabo Primero", "Sargento", "Sargento Primero",
+  "Sub Teniente", "Teniente", "Teniente Primero", "Capitán", "Mayor", "Teniente Coronel",
+  "Coronel", "General de Brigada", "General de División", "Teniente General", "General",
+  "General en Jefe", "Mariscal", "Comandante Estelar"
 ];
 
 const borderColors = [
-  "transparent",      
-  "#263238",          
-  "#37474f",          
-  "#455a64",          
-  "#546e7a",          
-  "#607d8b",          
-  "#78909c",          
-  "#90a4ae",          
-  "#b0bec5",          
-  "#cfd8dc",          
-  "#eceff1",          
-  "#f48fb1",          
-  "#f06292",          
-  "#e91e63",          
-  "#d81b60",          
-  "#c2185b",          
-  "#ad1457",          
-  "#880e4f",          
-  "#4a148c",          
-  "#311b92",          
-  "#1a237e"           
+  "transparent",           // index 0
+  "#2F4F4F",  // level-1  - Dark Slate Gray
+  "#556B2F",  // level-2  - Dark Olive Green
+  "#6B8E23",  // level-3  - Olive Drab
+  "#808000",  // level-4  - Olive
+  "#9ACD32",  // level-5  - Yellow Green
+  "#8F9779",  // level-6  - Camouflage Green
+  "#708238",  // level-7  - Moss Green
+  "#4B5320",  // level-8  - Army Green
+  "#3B5323",  // level-9  - Military Green
+  "#556B2F",  // level-10 - Dark Olive Green (repeated)
+  "#6E7F41",  // level-11 - Laurel Green
+  "#7C9C56",  // level-12 - Olive Green Light
+  "#9DBF9E",  // level-13 - Sage Green
+  "#A9BA9D",  // level-14 - Soft Olive
+  "#C1C6B8",  // level-15 - Light Military Green
+  "#D4D6AA",  // level-16 - Pale Olive
+  "#F0E68C",  // level-17 - Khaki
+  "#EEE8AA",  // level-18 - Pale Goldenrod
+  "#BDB76B",  // level-19 - Dark Khaki
+  "#556B2F"   // level-20 - Dark Olive Green (again)
 ];
 
+// Referencias DOM (con comprobación)
 const gameBoard = document.getElementById("gameBoard");
-gameBoard.style.borderRadius = "12px";
+if (!gameBoard) throw new Error("No se encontró el elemento #gameBoard");
 
-gameBoard.addEventListener('touchmove', function(event) {
-  event.preventDefault();  // evita el scroll cuando tocamos en el tablero
-}, { passive: false });
+gameBoard.style.borderRadius = "12px";
+gameBoard.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
 const scoreDisplay = document.getElementById("score");
 const maxLevelDisplay = document.getElementById("maxLevel");
 const startButton = document.getElementById("startBtn");
 const toast = document.getElementById("toast");
 
-// Modal Elements
 const modalEl = document.getElementById("hallOfFameModal");
-const modalScoreEl = document.getElementById("modalScore"); // no usado, puede omitirse o crear si quieres mostrar puntaje ahí
-const modalRankEl = document.getElementById("modalRank");   // idem anterior
 const submitArcadeNameBtn = document.getElementById("submitArcadeName");
+const hallOfFameModalEl = document.getElementById("hallOfFameListModal");
+if (!hallOfFameModalEl) throw new Error("No se encontró el modal de Hall of Fame");
 
-// Para la selección de letras/números del nombre en modal arcade
+const hallOfFameModal = new bootstrap.Modal(hallOfFameModalEl);
+
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 let selectedName = ["A", "A", "A"];
 
 function showSpinner() {
-  document.getElementById("loadingSpinner").style.display = "flex";
+  const spinner = document.getElementById("loadingSpinner");
+  if (spinner) spinner.style.display = "flex";
 }
 
 function hideSpinner() {
-  document.getElementById("loadingSpinner").style.display = "none";
+  const spinner = document.getElementById("loadingSpinner");
+  if (spinner) spinner.style.display = "none";
 }
 
 function initBoard() {
@@ -106,25 +92,58 @@ function addRandomRank() {
   board[r][c] = 1;
 }
 
+function bounceScroll(element, distance = null, duration = 2000) {
+  let direction = 1; // 1 = bajar, -1 = subir
+  let scrollTop = 0;
+  const maxScroll = element.scrollHeight - element.clientHeight;
+  if (maxScroll <= 0) return; // No hay scroll, no hacer nada
+
+  // Ajustar distance si es null o mayor que el maxScroll
+  if (distance === null || distance > maxScroll) {
+    distance = maxScroll;
+  }
+
+  const stepTime = 20; // ms por paso
+  const steps = duration / stepTime;
+  const stepSize = distance / steps;
+
+  function step() {
+    scrollTop += direction * stepSize;
+
+    if (scrollTop >= distance) {
+      scrollTop = distance;
+      direction = -1;
+    } else if (scrollTop <= 0) {
+      scrollTop = 0;
+      direction = 1;
+    }
+    element.scrollTop = scrollTop;
+    setTimeout(step, stepTime);
+  }
+
+  step();
+}
+
+
 async function showHallOfFameInBoard() {
   try {
-    showSpinner();  // Muestra el spinner antes de hacer fetch
-
-    const res = await fetch(`${BACKEND_URL}/hall-of-fame`);
-    const data = await res.json();
-
-    hideSpinner();  // Oculta el spinner cuando llega la data
+    showSpinner();
+    const q = query(collection(db, "score"), orderBy("score", "desc"), limit(10));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => doc.data());
+    hideSpinner();
 
     let table = `
-      <table class="table table-dark table-striped text-center align-middle">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Puntos</th>
-            <th>Rango</th>
-          </tr>
-        </thead>
-        <tbody>`;
+      <div class="hallOfFameTableWrapper" style="max-height: 300px; overflow-y: auto; overflow-x: hidden; font-size: 0.8rem;">
+        <table class="table table-dark table-striped text-center align-middle hallOfFameTable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Puntos</th>
+              <th>Rango</th>
+            </tr>
+          </thead>
+          <tbody>`;
 
     for (const entry of data) {
       table += `
@@ -135,13 +154,17 @@ async function showHallOfFameInBoard() {
         </tr>`;
     }
 
-    table += "</tbody></table>";
+    table += `
+          </tbody>
+        </table>
+      </div>`;
 
     document.getElementById("hallOfFameListContent").innerHTML = table;
-
-    // Mostrar el modal (asegúrate que el modal existe)
-    const modal = new bootstrap.Modal(document.getElementById("hallOfFameListModal"));
-    modal.show();
+    hallOfFameModal.show();
+    setTimeout(() => {
+      const wrapper = document.querySelector(".hallOfFameTableWrapper");
+      if(wrapper) bounceScroll(wrapper);
+    }, 300);
 
   } catch (err) {
     hideSpinner();
@@ -159,53 +182,54 @@ function updateBoard(mergedCells = []) {
       const cell = document.createElement("div");
       const level = board[r][c];
       cell.className = `cell level-${level}`;
-      if(level > 0) cell.classList.add("spawn");
+      if (level > 0) cell.classList.add("spawn");
       cell.textContent = rangos[level] || "";
 
-      // Aplica animación si esta celda fue fusionada
+      // Animación para celdas fusionadas
       if (mergedCells.some(pos => pos.r === r && pos.c === c)) {
         cell.classList.add("merge");
-      }     
-      
+      }
       gameBoard.appendChild(cell);
     }
-
-    const color = borderColors[maxLevel] || "transparent";
-    if (maxLevel > 0) {
-      gameBoard.style.border = "6px solid ${color}";
-    } else {
-      gameBoard.style.border = "6px solid transparent";
-    }
-
   }
+
+  const color = borderColors[maxLevel] || "transparent";
+  gameBoard.style.border = maxLevel > 0 ? `6px solid ${color}` : "6px solid transparent";
+
   scoreDisplay.textContent = score;
   maxLevelDisplay.textContent = maxLevel;
+
   saveGame();
 
   if (isGameOver()) {
     gameOver = true;
     setTimeout(async () => {
-      showToast("¡No quedan movimientos!");
-      gameStarted = false;
-      startButton.textContent = "Reinciar";
-      startButton.classList.remove("btn-success");
-      startButton.classList.add("btn-danger");
-
-      gameBoard.style.opacity = 0.5;
-  
-      const histMaxScore = parseInt(localStorage.getItem("histMaxScore")) || 0;
-  
-      if (score > histMaxScore) {
-        localStorage.setItem("histMaxScore", score);
-        await showModalArcade(); // Solo muestra el modal, no la tabla
-      } else {
-        await showHallOfFameInBoard(); // Solo si no hay récord
+      try {
+        showToast("¡No quedan movimientos!");
+        startButton.textContent = "Reiniciar";
+        startButton.classList.remove("btn-success");
+        startButton.classList.add("btn-danger");
+        gameBoard.style.opacity = 0.5;
+    
+        const histMaxScore = parseInt(localStorage.getItem("histMaxScore") || "0", 10);
+        console.log("Puntuaciones:", score, histMaxScore);
+    
+        gameStarted = false;
+    
+        if (score > histMaxScore) {
+          localStorage.setItem("histMaxScore", score.toString());
+          await showModalArcade();
+        } else {
+          await showHallOfFameInBoard();
+          //console.log("No superaste el record");
+        }
+      } catch (err) {
+        console.error("Error en el timeout post gameover:", err);
       }
     }, 100);
   } else {
     gameOver = false;
     gameBoard.style.opacity = 1;
-
     startButton.textContent = "Reiniciar";
     startButton.classList.remove("btn-danger");
     startButton.classList.add("btn-secondary");
@@ -220,7 +244,7 @@ function move(dir) {
   for (let i = 0; i < boardSize; i++) {
     let line = [];
 
-    // Extraer la línea actual según la dirección
+    // Extraer línea según dirección
     for (let j = 0; j < boardSize; j++) {
       let val = (dir === "left" || dir === "right")
         ? board[i][dir === "left" ? j : boardSize - 1 - j]
@@ -228,7 +252,7 @@ function move(dir) {
       if (val) line.push(val);
     }
 
-    // Fusionar valores adyacentes iguales
+    // Fusionar adyacentes iguales
     for (let k = 0; k < line.length - 1; k++) {
       if (line[k] === line[k + 1]) {
         line[k]++;
@@ -236,23 +260,19 @@ function move(dir) {
         if (line[k] > maxLevel) maxLevel = line[k];
         line.splice(k + 1, 1);
 
-        // Determinar posición real para animación
-        const r = (dir === "up" || dir === "down") ? 
-          (dir === "up" ? k : boardSize - 1 - k) : i;
-        const c = (dir === "left" || dir === "right") ? 
-          (dir === "left" ? k : boardSize - 1 - k) : i;
+        const r = (dir === "up" || dir === "down") ? (dir === "up" ? k : boardSize - 1 - k) : i;
+        const c = (dir === "left" || dir === "right") ? (dir === "left" ? k : boardSize - 1 - k) : i;
 
         mergedCells.push({ r, c });
         moved = true;
       }
     }
 
-    // Rellenar con ceros hasta completar línea
     while (line.length < boardSize) line.push(0);
 
-    // Escribir la línea modificada de vuelta al tablero
+    // Escribir línea modificada de vuelta al tablero
     for (let j = 0; j < boardSize; j++) {
-      let val = line[j];
+      const val = line[j];
       const r = (dir === "up") ? j :
                 (dir === "down") ? boardSize - 1 - j : i;
       const c = (dir === "left") ? j :
@@ -264,9 +284,8 @@ function move(dir) {
   }
 
   if (moved) addRandomRank();
-  updateBoard(mergedCells); 
+  updateBoard(mergedCells);
 }
-
 
 function isGameOver() {
   for (let r = 0; r < boardSize; r++) {
@@ -289,102 +308,159 @@ function isGameOver() {
 function showToast(message, duration = 2500) {
   toast.textContent = message;
   toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, duration);
+  setTimeout(() => toast.classList.remove("show"), duration);
 }
 
 function resetGame() {
-  if (!gameStarted) {
-    gameStarted = true;
-    startButton.textContent = "Reiniciar";
-    startButton.classList.remove("btn-secondary");
-    startButton.classList.add("btn-danger");
+  if (gameStarted) {
+    showToast(`Última puntuación: ${score} | Rango: ${rangos[maxLevel] || "N/A"}`, 3000);
   }
+
+  gameStarted = true;
+  startButton.textContent = "Reiniciar";
+  startButton.classList.remove("btn-secondary");
+  startButton.classList.add("btn-danger");
+
   initBoard();
 }
-
 function saveGame() {
-  localStorage.setItem("rankOpsGame", JSON.stringify({ board, score, maxLevel }));
+  try {
+    localStorage.setItem("rankOpsGame", JSON.stringify({ board, score, maxLevel }));
+  } catch (e) {
+    console.warn("No se pudo guardar el juego:", e);
+  }
 }
 
 function loadGame() {
-  const saved = localStorage.getItem("rankOpsGame");
-  if (saved) {
+  try {
+    const saved = localStorage.getItem("rankOpsGame");
+    if (!saved) return;
     const { board: b, score: s, maxLevel: ml } = JSON.parse(saved);
+    if (!b || !s || !ml) return;
     board = b;
     score = s;
     maxLevel = ml;
     gameStarted = true;
-    startButton.textContent = "Reiniciar";
-    startButton.classList.remove("btn-secondary");
-    startButton.classList.add("btn-danger");
     updateBoard();
+    startButton.textContent = "Reiniciar";
+    startButton.classList.remove("btn-success");
+    startButton.classList.add("btn-secondary");
+  } catch (e) {
+    console.warn("Error cargando el juego:", e);
   }
 }
 
+// Abrir modal para ingresar nombre al final de la partida
 async function showModalArcade() {
-  // Actualiza letras del modal con nombre por defecto
+  const modalEl = document.getElementById("hallOfFameModal");
+  const modalInstance = new bootstrap.Modal(modalEl);
+
+  // Inicializamos el nombre
   selectedName = ["A", "A", "A"];
-  updateArcadeLetters();
+  updateNameDisplay();
 
-  // Muestra modal Bootstrap
-  const modal = new bootstrap.Modal(modalEl);
-  modal.show();
+  // Quitamos listeners previos para evitar acumulación
+  submitArcadeNameBtn.replaceWith(submitArcadeNameBtn.cloneNode(true));
+  const newSubmitBtn = document.getElementById("submitArcadeName");
 
-  // Agregar eventos flechas para cambiar letras
-  const selectors = modalEl.querySelectorAll(".arcade-letter-selector");
-  selectors.forEach(selector => {
-    const index = parseInt(selector.getAttribute("data-index"));
+  newSubmitBtn.addEventListener("click", async () => {
+    const name = selectedName.join("").trim();
+    if (!name) {
+      alert("Por favor ingresa un nombre válido.");
+      return;
+    }
+
+    newSubmitBtn.disabled = true;
+
+    await saveRecordToFirebase(name);
+
+    modalInstance.hide();
+
+    newSubmitBtn.disabled = false;
+
+    await showHallOfFameInBoard();
+  });
+
+  // Configurar selección de letras si usas selects o divs (como en el HTML)
+  const letterSelectors = modalEl.querySelectorAll(".arcade-letter-selector");
+  letterSelectors.forEach((selector, idx) => {
     const upArrow = selector.querySelector(".arrow.up");
     const downArrow = selector.querySelector(".arrow.down");
+    const letterDiv = selector.querySelector(".arcade-letter");
 
-    upArrow.onclick = () => changeLetter(index, 1);
-    downArrow.onclick = () => changeLetter(index, -1);
+    // Inicializar letra
+    letterDiv.textContent = selectedName[idx];
+
+    upArrow.onclick = () => {
+      const currentIndex = letters.indexOf(selectedName[idx]);
+      selectedName[idx] = letters[(currentIndex + 1) % letters.length];
+      letterDiv.textContent = selectedName[idx];
+      updateNameDisplay();
+    };
+
+    downArrow.onclick = () => {
+      const currentIndex = letters.indexOf(selectedName[idx]);
+      selectedName[idx] = letters[(currentIndex - 1 + letters.length) % letters.length];
+      letterDiv.textContent = selectedName[idx];
+      updateNameDisplay();
+    };
   });
 
-  // Evento guardar nombre
-  submitArcadeNameBtn.onclick = async () => {
-    const name = selectedName.join("");
-    const rank = maxLevel;
-  
+  modalInstance.show();
+}
+
+
+function updateNameDisplay() {
+  document.getElementById("arcadeName").textContent = selectedName.join("");
+}
+
+
+async function saveRecordToFirebase(name) {
+  if (score > 0) {  // o if (gameOver && score > 0) para más seguridad
     try {
-      await fetch(`${BACKEND_URL}/hall-of-fame`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, score, rank }),
-      });
-  
-      // Oculta el modal
-      bootstrap.Modal.getInstance(modalEl).hide();
-  
-      // Espera unos ms antes de mostrar la tabla
-      setTimeout(showHallOfFameInBoard, 300);
+      const scoresRef = collection(db, "score");
+
+      const allScoresSnapshot = await getDocs(scoresRef);
+      const totalRecords = allScoresSnapshot.size;
+
+      if (totalRecords < 10) {
+        await addDoc(scoresRef, {
+          name,
+          score,
+          rank: maxLevel,
+        });
+        showToast("¡Record guardado!");
+      } else {
+        const lowestScoreQuery = query(scoresRef, orderBy("score", "asc"), limit(1));
+        const lowestScoreSnapshot = await getDocs(lowestScoreQuery);
+
+        if (!lowestScoreSnapshot.empty) {
+          const lowestDoc = lowestScoreSnapshot.docs[0];
+          const lowestData = lowestDoc.data();
+
+          if (score > lowestData.score) {
+            await deleteDoc(doc(db, "score", lowestDoc.id));
+            await addDoc(scoresRef, {
+              name,
+              score,
+              rank: maxLevel,
+              timestamp: Date.now(),
+            });
+            showToast("¡Nuevo record guardado!");
+          } else {
+            showToast("No superaste la puntuación más baja del top 10.");
+          }
+        }
+      }
     } catch (err) {
-      alert("Error al guardar el nombre en el Hall of Fame.");
-      console.error(err);
+      console.error("Error guardando record:", err);
+      showToast("Error guardando record");
     }
-  };
+  }
 }
 
-function changeLetter(index, delta) {
-  let pos = letters.indexOf(selectedName[index]);
-  pos = (pos + delta + letters.length) % letters.length;
-  selectedName[index] = letters[pos];
-  updateArcadeLetters();
-}
-
-function updateArcadeLetters() {
-  const selectors = modalEl.querySelectorAll(".arcade-letter-selector");
-  selectors.forEach((selector, i) => {
-    const letterEl = selector.querySelector(".arcade-letter");
-    letterEl.textContent = selectedName[i];
-  });
-}
-
-startButton.onclick = () => {
-  resetGame();
-};
+// Listeners de controles
+startButton.addEventListener("click", resetGame);
 
 let touchStartX = 0;
 let touchStartY = 0;
@@ -414,26 +490,25 @@ gameBoard.addEventListener("touchend", e => {
   }
 }, { passive: true });
 
-
 document.addEventListener("keydown", e => {
-  if (!gameStarted || gameOver) return;
-  switch (e.key) {
-    case "ArrowLeft":
-      move("left");
-      break;
-    case "ArrowRight":
-      move("right");
-      break;
-    case "ArrowUp":
-      move("up");
-      break;
-    case "ArrowDown":
-      move("down");
-      break;
+  if (!gameStarted) return;
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+    e.preventDefault();
+    switch (e.key) {
+      case "ArrowUp": move("up"); break;
+      case "ArrowDown": move("down"); break;
+      case "ArrowLeft": move("left"); break;
+      case "ArrowRight": move("right"); break;
+    }
   }
 });
 
-loadGame();
+// Al cargar la página
+window.onload = () => {
+  loadGame();
+  if (!gameStarted) resetGame();
+};
+
 
 document.getElementById("showHallOfFame").addEventListener("click", async () => {
   await showHallOfFameInBoard();

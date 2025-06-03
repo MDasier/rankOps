@@ -72,6 +72,7 @@
               <div class="arcade-letter" style="cursor:pointer;">A</div>
               <div class="arrow down" style="cursor:pointer;">▼</div>
             </div>
+            <div id="arcadeName" class="text-center fs-2 my-2 d-none"></div>
           </div>
         <button id="submitArcadeName" class="btn btn-primary w-100 fs-5">Guardar</button>
       </div>
@@ -81,6 +82,27 @@
   <div id="toast" class="toast">¡No quedan movimientos!</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="game.js"></script>
+  <script type="module" src="game.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+  
+    const firebaseConfig = {
+      apiKey: "AIzaSyBb0X21ymKEV6wOuZ-vYxloh1j7056Uq2A",
+      authDomain: "rankops-hof.firebaseapp.com",
+      projectId: "rankops-hof",
+      storageBucket: "rankops-hof.firebasestorage.app",
+      messagingSenderId: "595733594558",
+      appId: "1:595733594558:web:fe51cb68553a4eaa0439ef",
+      measurementId: "G-92PDL2SD3G"
+    };
+  
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+  
+    window.db = db; // para usarlo globalmente
+  </script>
+  
 </body>
 </html>
