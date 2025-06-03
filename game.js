@@ -12,7 +12,7 @@ const rangos = [
   "Cabo Primero",      
   "Sargento",          
   "Sargento Primero",  
-  "Subteniente",       
+  "Sub Teniente",       
   "Teniente",          
   "Teniente Primero",  
   "Capitán",           
